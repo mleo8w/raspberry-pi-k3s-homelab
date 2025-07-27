@@ -89,6 +89,42 @@ $ sudo apt install net-tools
 $ ip a
 ```
 
+### Using WiFi
+
+I found that wifi did not work automatically with Ubuntu, even with the entry in
+the `network-config` file. I needed to follow the instructions at
+<https://linuxconfig.org/ubuntu-20-04-connect-to-wifi-from-command-line> to add
+the wifi network settings to the `/etc/netplan/50-cloud-init.yaml` file.
+
+```sh
+# update the 50-cloud-init.yaml file with the wifi network settings
+$ sudoedit /etc/netplan/50-cloud-init.yaml
+
+$ cat /etc/netplan/50-cloud-init.yaml
+network:
+    ethernets:
+        eth0:
+            dhcp4: true
+            optional: true
+    version: 2
+    wifis:
+        wlan0:
+            optional: true
+            access-points:
+                "my-wifi-ssid":
+                    password: "my-wifi-password"
+            dhcp4: true
+
+# apply the settings
+$ sudo netplan apply
+
+# install net-tools to see adapter ip addresses
+$ sudo apt install net-tools
+
+# check that wifi adapter has an ip address
+$ ip a
+```
+
 ## Booting from SSD
 
 SD cards are limited in capacity (in comparison to HDD/SSD with terrabytes of
