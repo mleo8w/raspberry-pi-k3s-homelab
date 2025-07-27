@@ -102,6 +102,11 @@ dtparam=nvme
 dtparam=pciex1_gen=3
 ```
 
+```sh
+Manual YAML Installation Nginx
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.4/deploy/static/provider/baremetal/deploy.yaml
+```
+
 ### Using WiFi
 
 I found that wifi did not work automatically with Ubuntu, even with the entry in
