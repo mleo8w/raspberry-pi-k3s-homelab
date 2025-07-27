@@ -23,10 +23,10 @@ this path.
 clustering, and IoT edge devices. They are built using ARM processors and
 provide support for numerous input and output devices.
 
-My cluster is built with three [Raspberry Pi 4 Model B]:
+My cluster is built with 6 [Raspberry Pi 4 Model B] & 6 [Raspberry Pi 5 Model 16GB] :
 
 - Quad core ARM v8 (64bit) 1.5GHz CPU
-- 8Gb RAM
+- 8Gb RAM or 16Gb RAM
 - 2.45GHz and 5GHz Wi-Fi
 - Bluetooth
 - Gigabit ethernet
@@ -34,7 +34,7 @@ My cluster is built with three [Raspberry Pi 4 Model B]:
 - 2x micro-HDMI ports, supports 2 4K monitors
 - Micro-SD card for operating system and internal data storage
 
-I am running Ubuntu 20.04.2 LTS 64bit as the operating system.
+I am running Pi OS Bookworm 64 Bit as the operating system.
 
 Additional hardware for each:
 
@@ -53,40 +53,53 @@ headless, for now, than installing a full desktop.
 the SSD if you follow the instructions for booting your Pi off an SSD and no
 longer needing to use an SD card.
 
-### Using WiFi
+### OS Prep & Tuning (Raspberry Pi OS Lite 64-bit)
 
-I found that wifi did not work automatically with Ubuntu, even with the entry in
-the `network-config` file. I needed to follow the instructions at
-<https://linuxconfig.org/ubuntu-20-04-connect-to-wifi-from-command-line> to add
-the wifi network settings to the `/etc/netplan/50-cloud-init.yaml` file.
+There is various Prep
 
 ```sh
-# update the 50-cloud-init.yaml file with the wifi network settings
-$ sudoedit /etc/netplan/50-cloud-init.yaml
+# All nodes
+sudo raspi-config
+# -> Disable GUI, Overclock (Optional), Enable SSH
+```
 
-$ cat /etc/netplan/50-cloud-init.yaml
-network:
-    ethernets:
-        eth0:
-            dhcp4: true
-            optional: true
-    version: 2
-    wifis:
-        wlan0:
-            optional: true
-            access-points:
-                "my-wifi-ssid":
-                    password: "my-wifi-password"
-            dhcp4: true
+```sh
+# Kernel tuning /etc/sysctl.conf
+vm.swappiness=1
+net.ipv4.ip_forward=1
+net.bridge.bridge-nf-call-iptables=1
+fs.inotify.max_user_instances=1024
+```
 
-# apply the settings
-$ sudo netplan apply
+```sh
+# Disable swap
+sudo dphys-swapfile swapoff
+sudo dphys-swapfile uninstall
+sudo systemctl disable dphys-swapfile
+```
 
-# install net-tools to see adapter ip addresses
-$ sudo apt install net-tools
+```sh
+# SSD Optimization /etc/fstab
+noatime,nodiratime,discard=1
+```
 
-# check that wifi adapter has an ip address
-$ ip a
+```sh
+# Install prerequisites
+sudo apt update && sudo apt full-upgrade -y
+sudo apt install -y apparmor apparmor-utils curl nfs-common
+```
+
+```sh
+sudo nano /boot/firmware/cmdline.txt
+cgroup_memory=1 cgroup_enable=memory
+```
+
+```sh
+sudo nano /boot/firmware/config.txt
+gpu_mem=16
+#SSD
+dtparam=nvme
+dtparam=pciex1_gen=3
 ```
 
 ### Using WiFi
